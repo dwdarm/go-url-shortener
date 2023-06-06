@@ -1,0 +1,6 @@
+.vercel
+.env
+tmp
+dist
+.air.toml
+node_modules
