@@ -16,7 +16,7 @@ type Container struct {
 	ctn di.Container
 }
 
-func NewContainer() (*Container, error) {
+func NewContainer(ctx context.Context) (*Container, error) {
 	builder, err := di.NewBuilder()
 	if err != nil {
 		return nil, err
@@ -41,7 +41,7 @@ func NewContainer() (*Container, error) {
 			if setting.UseMongodb {
 				serverAPI := options.ServerAPI(options.ServerAPIVersion1)
 				opts := options.Client().ApplyURI(setting.MongodbURI).SetServerAPIOptions(serverAPI)
-				client, err := mongo.Connect(context.TODO(), opts)
+				client, err := mongo.Connect(ctx, opts)
 				if err != nil {
 					panic(err)
 				}
@@ -68,7 +68,6 @@ func NewContainer() (*Container, error) {
 
 			if setting.UseMongodb {
 				repo = repositories.NewLinkMongodbRepository(
-					context.TODO(),
 					ctn.Get("db").(*mongo.Database),
 				)
 			} else {

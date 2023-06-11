@@ -19,21 +19,19 @@ type LinkMongodbInstance struct {
 }
 
 type LinkMongodbRepository struct {
-	ctx context.Context
-	db  *mongo.Database
+	db *mongo.Database
 }
 
-func NewLinkMongodbRepository(ctx context.Context, db *mongo.Database) *LinkMongodbRepository {
+func NewLinkMongodbRepository(db *mongo.Database) *LinkMongodbRepository {
 	return &LinkMongodbRepository{
-		ctx: ctx,
-		db:  db,
+		db: db,
 	}
 }
 
-func (repo *LinkMongodbRepository) FindBySlug(slug string) (*models.Link, error) {
+func (repo *LinkMongodbRepository) FindBySlug(ctx context.Context, slug string) (*models.Link, error) {
 	var result LinkMongodbInstance
 
-	err := repo.db.Collection("link").FindOne(repo.ctx, bson.D{{"slug", slug}}).Decode(&result)
+	err := repo.db.Collection("link").FindOne(ctx, bson.D{{"slug", slug}}).Decode(&result)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, nil
@@ -49,7 +47,7 @@ func (repo *LinkMongodbRepository) FindBySlug(slug string) (*models.Link, error)
 	}, nil
 }
 
-func (repo *LinkMongodbRepository) Save(link *models.Link) (*models.Link, error) {
+func (repo *LinkMongodbRepository) Save(ctx context.Context, link *models.Link) (*models.Link, error) {
 	newLink := LinkMongodbInstance{
 		Slug:      link.Slug,
 		Href:      link.Href,
@@ -57,7 +55,7 @@ func (repo *LinkMongodbRepository) Save(link *models.Link) (*models.Link, error)
 		CreatedAt: primitive.NewDateTimeFromTime(time.Now()),
 	}
 
-	exist, err := repo.FindBySlug(link.Slug)
+	exist, err := repo.FindBySlug(ctx, link.Slug)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +64,7 @@ func (repo *LinkMongodbRepository) Save(link *models.Link) (*models.Link, error)
 		return nil, errors.NewErrDuplicate("slug is already exist")
 	}
 
-	_, err = repo.db.Collection("link").InsertOne(repo.ctx, newLink)
+	_, err = repo.db.Collection("link").InsertOne(ctx, newLink)
 	if err != nil {
 
 		if mongo.IsDuplicateKeyError(err) {
@@ -76,5 +74,5 @@ func (repo *LinkMongodbRepository) Save(link *models.Link) (*models.Link, error)
 		return nil, err
 	}
 
-	return repo.FindBySlug(link.Slug)
+	return repo.FindBySlug(ctx, link.Slug)
 }

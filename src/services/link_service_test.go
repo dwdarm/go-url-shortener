@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"testing"
 
 	"github.com/dwdarm/go-url-shortener/src/repositories"
@@ -19,7 +20,7 @@ func TestCreateRandomSlug(t *testing.T) {
 
 	srv := createService()
 
-	link, err := srv.CreateLink("", href)
+	link, err := srv.CreateLink(context.TODO(), "", href)
 
 	if err != nil {
 		t.Errorf("Expected nil on error but got one")
@@ -42,7 +43,7 @@ func TestCreateCustomSlug(t *testing.T) {
 
 	srv := createService()
 
-	link, err := srv.CreateLink(slug, href)
+	link, err := srv.CreateLink(context.TODO(), slug, href)
 
 	if err != nil {
 		t.Errorf("Expected not nil on error but got one")
@@ -61,9 +62,9 @@ func TestFailOnExistingSlug(t *testing.T) {
 
 	srv := createService()
 
-	srv.CreateLink(slug, href)
+	srv.CreateLink(context.TODO(), slug, href)
 
-	link, err := srv.CreateLink(slug, href)
+	link, err := srv.CreateLink(context.TODO(), slug, href)
 
 	if err == nil {
 		t.Errorf("Expected error but got nil")
@@ -80,7 +81,7 @@ func TestInvalidHref(t *testing.T) {
 
 	srv := createService()
 
-	link, err := srv.CreateLink(slug, href)
+	link, err := srv.CreateLink(context.TODO(), slug, href)
 
 	if err == nil {
 		t.Errorf("Expected error but got nil")
@@ -95,9 +96,9 @@ func TestGetLink(t *testing.T) {
 	href := "http://example.com"
 
 	srv := createService()
-	f, _ := srv.CreateLink("", href)
+	f, _ := srv.CreateLink(context.TODO(), "", href)
 
-	link, err := srv.GetLink(f.Slug)
+	link, err := srv.GetLink(context.TODO(), f.Slug)
 
 	if err != nil {
 		t.Errorf("Expected not nil on error but got one")
@@ -115,9 +116,9 @@ func TestGetLink(t *testing.T) {
 
 func TestNonExistingLink(t *testing.T) {
 	srv := createService()
-	srv.CreateLink("hello world", "http://example.com")
+	srv.CreateLink(context.TODO(), "hello world", "http://example.com")
 
-	link, err := srv.GetLink("hello worldd")
+	link, err := srv.GetLink(context.TODO(), "hello world")
 
 	if err != nil {
 		t.Errorf("Expected nil on error but got one")

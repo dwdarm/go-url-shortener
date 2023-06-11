@@ -1,13 +1,15 @@
 package cmd
 
 import (
+	"context"
+
 	"github.com/dwdarm/go-url-shortener/src/registry"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
 func Init() *gin.Engine {
-	ctn, err := registry.NewContainer()
+	ctn, err := registry.NewContainer(context.TODO())
 	if err != nil {
 		panic(err)
 	}

@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"encoding/base64"
 
 	"github.com/dwdarm/go-url-shortener/src/models"
@@ -11,8 +12,8 @@ import (
 )
 
 type LinkService interface {
-	GetLink(sg string) (*models.Link, error)
-	CreateLink(sg string, href string) (*models.Link, error)
+	GetLink(ctx context.Context, sg string) (*models.Link, error)
+	CreateLink(ctx context.Context, sg string, href string) (*models.Link, error)
 }
 
 type LinkServiceImp struct {
@@ -25,8 +26,8 @@ func NewLinkService(repo repositories.LinkRepository) LinkService {
 	}
 }
 
-func (s *LinkServiceImp) GetLink(sg string) (*models.Link, error) {
-	link, err := s.repo.FindBySlug(sg)
+func (s *LinkServiceImp) GetLink(ctx context.Context, sg string) (*models.Link, error) {
+	link, err := s.repo.FindBySlug(ctx, sg)
 
 	return link, err
 }
@@ -41,7 +42,7 @@ func generateQrCode(data string) string {
 	return "data: image/gif;base64, " + base64.StdEncoding.EncodeToString(img)
 }
 
-func (s *LinkServiceImp) createUniqueLink(href string) (*models.Link, error) {
+func (s *LinkServiceImp) createUniqueLink(ctx context.Context, href string) (*models.Link, error) {
 	for {
 
 		sg, err := randutil.Alphanumeric(6)
@@ -49,7 +50,7 @@ func (s *LinkServiceImp) createUniqueLink(href string) (*models.Link, error) {
 			return nil, err
 		}
 
-		exist, err := s.GetLink(sg)
+		exist, err := s.GetLink(ctx, sg)
 		if err != nil {
 			return nil, err
 		}
@@ -60,7 +61,7 @@ func (s *LinkServiceImp) createUniqueLink(href string) (*models.Link, error) {
 				return nil, err
 			}
 
-			link, err := s.repo.Save(in)
+			link, err := s.repo.Save(ctx, in)
 			if err != nil {
 				return nil, err
 			}
@@ -70,21 +71,21 @@ func (s *LinkServiceImp) createUniqueLink(href string) (*models.Link, error) {
 	}
 }
 
-func (s *LinkServiceImp) createCustomLink(sg string, href string) (*models.Link, error) {
+func (s *LinkServiceImp) createCustomLink(ctx context.Context, sg string, href string) (*models.Link, error) {
 	in, err := models.NewLink(slug.Make(sg), href, generateQrCode(href))
 	if err != nil {
 		return nil, err
 	}
 
-	link, err := s.repo.Save(in)
+	link, err := s.repo.Save(ctx, in)
 
 	return link, err
 }
 
-func (s *LinkServiceImp) CreateLink(sg string, href string) (*models.Link, error) {
+func (s *LinkServiceImp) CreateLink(ctx context.Context, sg string, href string) (*models.Link, error) {
 	if len(sg) < 6 {
-		return s.createUniqueLink(href)
+		return s.createUniqueLink(ctx, href)
 	} else {
-		return s.createCustomLink(sg, href)
+		return s.createCustomLink(ctx, sg, href)
 	}
 }

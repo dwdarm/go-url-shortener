@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/dwdarm/go-url-shortener/src/configs"
@@ -28,7 +29,7 @@ func NewLinkHandler(setting *configs.Setting, linkService services.LinkService) 
 
 func (h *LinkHandlerImp) LinkGet(c *gin.Context) {
 	slug := c.Param("slug")
-	link, err := h.linkService.GetLink(slug)
+	link, err := h.linkService.GetLink(context.TODO(), slug)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -63,7 +64,7 @@ func (h *LinkHandlerImp) LinkCreate(c *gin.Context) {
 		return
 	}
 
-	link, err := h.linkService.CreateLink(form.Slug, form.Href)
+	link, err := h.linkService.CreateLink(context.TODO(), form.Slug, form.Href)
 	if err != nil {
 		if _, ok := err.(*errors.ErrDuplicate); ok {
 			c.JSON(http.StatusForbidden, gin.H{

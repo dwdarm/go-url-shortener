@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"context"
 	"sync"
 
 	"github.com/dwdarm/go-url-shortener/src/errors"
@@ -25,7 +26,7 @@ func NewLinkMemoryRepository() *LinkMemoryRepository {
 	}
 }
 
-func (repo *LinkMemoryRepository) FindBySlug(slug string) (*models.Link, error) {
+func (repo *LinkMemoryRepository) FindBySlug(ctx context.Context, slug string) (*models.Link, error) {
 	repo.mtx.Lock()
 	defer repo.mtx.Unlock()
 
@@ -37,7 +38,7 @@ func (repo *LinkMemoryRepository) FindBySlug(slug string) (*models.Link, error) 
 	return models.NewLink(data.Slug, data.Href, data.QrCode)
 }
 
-func (repo *LinkMemoryRepository) Save(link *models.Link) (*models.Link, error) {
+func (repo *LinkMemoryRepository) Save(ctx context.Context, link *models.Link) (*models.Link, error) {
 	repo.mtx.Lock()
 	defer repo.mtx.Unlock()
 
